@@ -41,7 +41,7 @@ const Signin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', formData);
+      const res = await axios.post('https://dishwizh-api-2.onrender.com/api/auth/login', formData);
 
       // Assuming the backend returns an object with `userId`
       const userId = res.data.userId; // Make sure your backend is sending `userId` in the response

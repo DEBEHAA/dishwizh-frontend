@@ -19,7 +19,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', formData);
+      const response = await axios.post('https://dishwizh-api-2.onrender.com/api/auth/register', formData);
       
       // Save user data (including user ID) in localStorage
       localStorage.setItem('user', JSON.stringify(response.data.user));
