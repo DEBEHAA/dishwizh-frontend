@@ -13,7 +13,7 @@ const MyRecipes = () => {
     const getMyRecipes = async () => {
         try {
             const userId = localStorage.getItem('userId');
-            const response = await axios.get(`http://localhost:5000/api/recipe/${userId}`);
+            const response = await axios.get(`https://dishwizh-api-2.onrender.com/api/recipe/${userId}`);
             setMyRecipes(response.data);
             setLoading(false);
         } catch (error) {
