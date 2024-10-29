@@ -1,0 +1,68 @@
+.user-details-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fdfdfd;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    font-family: 'Arial', sans-serif;
+}
+
+.user-details-form {
+    display: flex;
+    flex-wrap: wrap; /* Wrap form fields in case of smaller screens */
+    gap: 20px; /* Add gap between form fields */
+}
+
+.form-group {
+    flex: 1 1 45%; /* Each form field takes 45% of the space */
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    font-weight: normal; /* Reduce boldness */
+    margin-bottom: 8px;
+    color: #333; /* Darker color for labels */
+    font-size: 14px; /* Slightly smaller font size for labels */
+}
+
+.form-group input, .form-group select {
+    padding: 8px; /* Reduce padding inside input fields */
+    font-size: 14px; /* Adjust font size for input */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus, .form-group select:focus {
+    border-color: #1976d2; /* Add focus effect */
+    outline: none;
+}
+
+button {
+    padding: 12px; /* Reduced padding for button */
+    font-size: 14px; /* Adjust font size */
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%; /* Full-width button */
+    margin-top: 20px;
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+button:hover {
+    background-color: #155a9a;
+}
+
+p {
+    color: green;
+    font-weight: normal; /* Reduce boldness for message */
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}

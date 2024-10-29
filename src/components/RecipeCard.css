@@ -1,0 +1,95 @@
+/* Recipe Image */
+.recipe-img {
+    object-fit: cover;
+    height: 200px;
+    width: 100%;
+    border-radius: 10px 10px 0 0;
+}
+
+/* Recipe Title */
+.recipe-p {
+    color: #fff;
+    padding: 10px 15px;
+    position: absolute;
+    bottom: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    height: 60px;
+    z-index: 2;
+    width: 100%;
+    font-size: 1.2em;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* Recipe Card Container */
+.recipe-card-container {
+    position: relative;
+    width: 300px;
+    margin: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    animation: fade-in 300ms ease-in-out;
+    background-color: #fff; /* Ensures background on hover */
+}
+
+.recipe-card-container:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Fade-in Animation */
+@keyframes fade-in {
+    0% {
+        top: 40px;
+        opacity: 0;
+    }
+    100% {
+        top: 0;
+        opacity: 1;
+    }
+}
+
+/* Gradient Overlay */
+.recipe-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+    z-index: 1;
+}
+
+/* Favorite Icon */
+.favorite-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: rgb(13, 13, 13);
+    font-size: 24px;
+    transition: color 0.3s ease;
+}
+
+.favorite-icon .favorite {
+    color: rgb(23, 22, 22);
+}
+
+.favorite-icon .not-favorite {
+    color: rgb(0, 0, 0);
+}
+
+/* Slider Arrows Customization */
+.splide__arrow.splide__arrow--prev {
+    left: 20px;
+    top: -25px;
+}
+
+.splide__arrow.splide__arrow--next {
+    right: 20px;
+    top: -25px;
+}

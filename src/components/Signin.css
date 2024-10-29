@@ -1,0 +1,11 @@
+/* Background image styling */
+.signin-container {
+    background-image: url('https://images.unsplash.com/photo-1513104890138-7c749659a591'); /* Replace with a high-quality chef/cooking image */
+    background-size: cover;
+    background-position: center;
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
