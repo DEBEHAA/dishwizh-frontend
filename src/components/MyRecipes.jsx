@@ -1,4 +1,3 @@
-// components/MyRecipes.js
 import React, { useState, useEffect } from 'react';
 import RecipeCard from "./RecipeCard";
 import { Splide, SplideSlide } from '@splidejs/react-splide';
@@ -13,7 +12,7 @@ const MyRecipes = () => {
     const getMyRecipes = async () => {
         try {
             const userId = localStorage.getItem('userId');
-            const response = await axios.get(`https://dishwizh-api-2.onrender.com/api/recipe/${userId}`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/recipe/${userId}`);
             setMyRecipes(response.data);
             setLoading(false);
         } catch (error) {

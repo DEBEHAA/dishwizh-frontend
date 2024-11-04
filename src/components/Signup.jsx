@@ -3,6 +3,7 @@ import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import img from './img.jpg';
+
 const Signup = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -19,8 +20,8 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('https://dishwizh-api-2.onrender.com/api/auth/register', formData);
-      
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/auth/register`, formData);
+
       // Save user data (including user ID) in localStorage
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
@@ -74,7 +75,7 @@ const Signup = () => {
       >
         <Container maxWidth="sm" sx={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', padding: 4, borderRadius: 2, boxShadow: 3 }}>
           <Typography variant="h4" align="center" gutterBottom sx={{ color: '#1976d2' }}>
-           Join with DishWizh
+            Join with DishWizh
           </Typography>
           {error && <Typography color="error" align="center">{error}</Typography>}
           <form onSubmit={handleSubmit}>

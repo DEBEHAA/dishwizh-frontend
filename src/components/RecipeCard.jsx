@@ -26,14 +26,16 @@ const RecipeCard = ({ data }) => {
             // Add to favorites
             updatedFavorites = [...storedFavorites, data];
         }
-        
+
         // Update local storage and state
         localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
         setIsFavorite(!isFavorite);
     };
 
     // Determine the image source
-    const imageSrc = data.isCustom ? `https://dishwizh-api-2.onrender.com/${data.imageUrl}` : data.image;
+    const imageSrc = data.isCustom
+        ? `${process.env.REACT_APP_BACKEND_URL}${data.imageUrl}`
+        : data.image;
 
     return (
         <div className="recipe-card-container">
