@@ -34,7 +34,7 @@ const RecipeCard = ({ data }) => {
 
     // Determine the image source
     const imageSrc = data.isCustom
-        ? `${process.env.REACT_APP_BACKEND_URL}${data.imageUrl}`
+        ? `${process.env.VITE_REACT_APP_BACKEND_URL}${data.imageUrl}`
         : data.image;
 
     return (

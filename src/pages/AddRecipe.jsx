@@ -57,9 +57,13 @@ const AddRecipe = () => {
     }
 
     try {
-      const response = await axios.post('https://dishwizh-api-2.onrender.com/api/recipe', formDataToSend, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/recipe`,
+        formDataToSend,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }
+      );
 
       setMessage(response.data.message);
       setFormData({
