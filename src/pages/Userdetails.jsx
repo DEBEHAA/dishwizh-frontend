@@ -38,7 +38,8 @@ const UserDetails = () => {
         return;
       }
       try {
-        const response = await axios.get(`https://dishwizh-api-2.onrender.com/api/chef/${userId}`);
+        const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+        const response = await axios.get(`${backendUrl}/api/chef/${userId}`);
         if (response.data) {
           setUserData(response.data); // Populate form with existing data
           setIsNewUser(false); // Set to update mode
@@ -74,11 +75,12 @@ const UserDetails = () => {
     }
 
     try {
+      const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
       if (isNewUser) {
-        await axios.post(`https://dishwizh-api-2.onrender.com/api/chef/${userId}`, userData);
+        await axios.post(`${backendUrl}/api/chef/${userId}`, userData);
         setMessage('User details added successfully!');
       } else {
-        await axios.put(`https://dishwizh-api-2.onrender.com/api/chef/${userId}`, userData);
+        await axios.put(`${backendUrl}/api/chef/${userId}`, userData);
         setMessage('User details updated successfully!');
       }
       setIsNewUser(false);
