@@ -17,7 +17,7 @@ import {
 import './UserDetails.css';
 
 const UserDetails = () => {
-  const userId = localStorage.getItem('userId');
+  const userId = localStorage.getItem('userId'); // Retrieve the userId from localStorage
   const [userData, setUserData] = useState({
     phone: '',
     address: '',
@@ -42,7 +42,7 @@ const UserDetails = () => {
       }
 
       try {
-        const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+        const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/$/, ''); // Ensure no trailing slash
         setLoading(true);
         const response = await axios.get(`${backendUrl}/api/chef/${userId}`);
         if (response.data) {
@@ -51,7 +51,7 @@ const UserDetails = () => {
         }
       } catch (error) {
         if (error.response && error.response.status === 404) {
-          setIsNewUser(true);
+          setIsNewUser(true); // User does not exist yet
         } else {
           console.error('Error fetching user data:', error);
           setMessage('Error fetching user details. Please try again later.');
@@ -84,24 +84,25 @@ const UserDetails = () => {
     }
 
     try {
-      const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+      const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/$/, ''); // Ensure no trailing slash
       setLoading(true);
-      if (isNewUser) {
-        await axios.post(`${backendUrl}/api/chef/${userId}`, userData);
-        setMessage('User details added successfully!');
-      } else {
-        await axios.put(`${backendUrl}/api/chef/${userId}`, userData);
-        setMessage('User details updated successfully!');
-      }
+
+      // Use POST for new users and PUT for existing users
+      const response = isNewUser
+        ? await axios.post(`${backendUrl}/api/chef`, { userId, ...userData })
+        : await axios.put(`${backendUrl}/api/chef/${userId}`, userData);
+
+      setMessage(response.data.message || (isNewUser ? 'User details added successfully!' : 'User details updated successfully!'));
       setIsNewUser(false);
     } catch (error) {
       if (error.response) {
-        setMessage(`Error: ${error.response.data.message}`);
+        setMessage(`Error: ${error.response.data.message || 'Failed to update user details.'}`);
       } else if (error.request) {
         setMessage('Network error. Please check your internet connection.');
       } else {
         setMessage('An unexpected error occurred. Please try again.');
       }
+      console.error('Error submitting user data:', error);
     } finally {
       setLoading(false);
     }
