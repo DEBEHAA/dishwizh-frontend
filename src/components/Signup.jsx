@@ -13,30 +13,36 @@ const Signup = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Clean the backend URL to prevent trailing slashes or issues
+  const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/+$/, '');
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Backend URL:", import.meta.env.VITE_REACT_APP_BACKEND_URL); // Debugging
+    console.log("Backend URL:", backendURL); // Debugging the backend URL
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/auth/register`, 
-        formData
-      );
+      // Make the API request to register the user
+      const response = await axios.post(`${backendURL}/api/auth/register`, formData);
 
       // Save user data (including user ID) in localStorage
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
-      // Redirect to the Sign In page or wherever you want
+      // Redirect to the Sign In page
       navigate('/signin');
     } catch (err) {
-      console.error("Registration error:", err); // Log error details
-      setError(
-        err.response?.data?.message || 'Registration failed. Please try again.'
-      ); // Improved error message based on response
+      console.error("Registration error:", err);
+
+      if (err.code === 'ERR_NETWORK') {
+        setError('Network error. Please check your internet connection or try again later.');
+      } else {
+        setError(
+          err.response?.data?.message || 'Registration failed. Please try again.'
+        );
+      }
     }
   };
 
