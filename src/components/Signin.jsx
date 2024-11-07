@@ -28,9 +28,8 @@ const Signin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  // Backend URL from environment variable
-  const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL;
-  console.log("Backend URL:", BACKEND_URL); // Debugging
+  // Clean the backend URL to prevent trailing slashes or issues
+  const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/+$/, '');
 
   // Toggle password visibility
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -44,20 +43,27 @@ const Signin = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Backend URL:", backendURL); // Debugging the backend URL
+
     try {
-      const res = await axios.post(`${BACKEND_URL}/api/auth/login`, formData);
+      const res = await axios.post(`${backendURL}/api/auth/login`, formData);
 
       // Assuming the backend returns an object with `userId`
-      const userId = res.data.userId; // Make sure your backend is sending `userId` in the response
+      const userId = res.data.userId;
 
       // Store userId in localStorage
       localStorage.setItem('userId', userId);
 
-      // Redirect to user details page
+      // Redirect to the user details page or dashboard
       navigate('/*');
     } catch (err) {
-      setError('Login failed. Invalid credentials.');
-      console.error('Login error:', err); // Log the error for further debugging
+      console.error("Login error:", err);
+
+      if (err.code === 'ERR_NETWORK') {
+        setError('Network error. Please check your internet connection or try again later.');
+      } else {
+        setError(err.response?.data?.message || 'Login failed. Invalid credentials.');
+      }
     }
   };
 
