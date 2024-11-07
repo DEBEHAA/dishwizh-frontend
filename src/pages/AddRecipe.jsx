@@ -13,28 +13,28 @@ import {
   CircularProgress,
 } from '@mui/material';
 
-const CUISINE_OPTIONS = ['Italian', 'Mexican', 'Indian', 'Chinese', 'American'];
-
 const AddRecipe = () => {
   const userId = localStorage.getItem('userId'); // Retrieve the userId from localStorage
   const [formData, setFormData] = useState({
     recipeName: '',
     cuisineType: '',
     ingredients: '',
-    steps: '',
+    steps: ''
   });
   const [image, setImage] = useState(null); // State for image file
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false); // Loading state
 
+  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: value
     });
   };
 
+  // Handle image file changes
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file && file.size > 5 * 1024 * 1024) {
@@ -48,6 +48,7 @@ const AddRecipe = () => {
     setImage(file);
   };
 
+  // Handle form submission
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
@@ -59,7 +60,7 @@ const AddRecipe = () => {
       return;
     }
 
-    const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+    const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/$/, ''); // Ensure no trailing slash
     if (!backendUrl) {
       setMessage('Server configuration error. Please try again later.');
       return;
@@ -78,7 +79,7 @@ const AddRecipe = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        `${backendUrl}/api/recipe`,
+        `${backendUrl}/api/recipe`, // Updated URL handling
         formDataToSend,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -87,7 +88,7 @@ const AddRecipe = () => {
         recipeName: '',
         cuisineType: '',
         ingredients: '',
-        steps: '',
+        steps: ''
       });
       setImage(null);
     } catch (error) {
@@ -110,11 +111,7 @@ const AddRecipe = () => {
         Add New Recipe
       </Typography>
       {message && (
-        <Typography
-          color={message.includes('success') ? 'primary' : 'error'}
-          align="center"
-          sx={{ mb: 2 }}
-        >
+        <Typography color={message.includes('success') ? 'primary' : 'error'} align="center" sx={{ mb: 2 }}>
           {message}
         </Typography>
       )}
@@ -140,11 +137,11 @@ const AddRecipe = () => {
                 onChange={handleInputChange}
                 label="Cuisine Type"
               >
-                {CUISINE_OPTIONS.map((cuisine) => (
-                  <MenuItem key={cuisine} value={cuisine}>
-                    {cuisine}
-                  </MenuItem>
-                ))}
+                <MenuItem value="Italian">Italian</MenuItem>
+                <MenuItem value="Mexican">Mexican</MenuItem>
+                <MenuItem value="Indian">Indian</MenuItem>
+                <MenuItem value="Chinese">Chinese</MenuItem>
+                <MenuItem value="American">American</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -175,7 +172,11 @@ const AddRecipe = () => {
             />
           </Grid>
           <Grid item xs={12}>
-            <Button variant="contained" component="label" fullWidth>
+            <Button
+              variant="contained"
+              component="label"
+              fullWidth
+            >
               Upload Image
               <input
                 type="file"
