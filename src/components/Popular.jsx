@@ -9,7 +9,7 @@ const Popular = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const API_KEY = import.meta.env.REACT_APP_API_KEY;
+    const API_KEY = '81bdc134fb73435fbb14311ed16cb557';
     console.log("API Key:", API_KEY); // Debugging
     console.log("Backend URL:", import.meta.env.VITE_REACT_APP_BACKEND_URL); // Debugging
 

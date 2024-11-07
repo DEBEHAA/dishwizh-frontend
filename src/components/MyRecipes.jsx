@@ -6,23 +6,24 @@ import { Skeleton, Typography } from "@mui/material";
 import axios from 'axios';
 
 const MyRecipes = () => {
-    const [myRecipes, setMyRecipes] = useState([]); // State to store custom recipes
-    const [loading, setLoading] = useState(true); // Loading state
-    const [error, setError] = useState(''); // Error state
+    const [myRecipes, setMyRecipes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     const getMyRecipes = async () => {
         const userId = localStorage.getItem('userId');
+
         if (!userId) {
-            setError("User not found. Please log in again.");
+            setError("User ID is missing. Please log in again.");
             setLoading(false);
             return;
         }
 
         try {
-            console.log("Fetching recipes from:", process.env.VITE_REACT_APP_BACKEND_URL);
-            const response = await axios.get(`${process.env.VITE_REACT_APP_BACKEND_URL}/api/recipe/${userId}`);
-            console.log("API Response:", response.data);
+            const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL; // Use import.meta.env
+            console.log("Backend URL:", BACKEND_URL); // Debugging
 
+            const response = await axios.get(`${BACKEND_URL}/api/recipe/${userId}`);
             if (Array.isArray(response.data)) {
                 setMyRecipes(response.data);
             } else {

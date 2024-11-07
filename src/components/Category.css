@@ -4,6 +4,11 @@
     gap: 50px;
     justify-content: center;
 }
+p
+
+{
+    color: #fff;
+}
 .category-container a 
 {
     display: flex;

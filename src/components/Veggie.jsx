@@ -6,7 +6,7 @@ import { Skeleton, Typography } from "@mui/material";
 
 const Veggie = () => {
     // Use import.meta.env for environment variables in Vite
-    const API_KEY = import.meta.env.VITE_REACT_APP_API_KEY || '81bdc134fb73435fbb14311ed16cb557';
+    const API_KEY = '71ee729777aa439ba75c472c3bca40b4';
     console.log("API Key:", API_KEY); // Debugging
 
     const [veggie, setVeggie] = useState([]); // State to store recipes

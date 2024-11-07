@@ -8,19 +8,19 @@ const Category = () => {
         <div className="category-container">
             <NavLink to={'/cuisine/Italian'}>
                 <FaPizzaSlice />
-                <p>Italian</p>
+                <p style={{ color: '#fff'}}>Italian</p>
             </NavLink>
             <NavLink to={'/cuisine/American'}>
                 <FaHamburger />
-                <p>American</p>
+                <p style={{ color: '#fff'}}>American</p>
             </NavLink>
             <NavLink to={'/cuisine/Thai'}>
                 <GiNoodles />
-                <p>Thai</p>
+                <p style={{ color: '#fff'}}>Thai</p>
             </NavLink>
             <NavLink to={'/cuisine/Chinese'}>
                 <GiChopsticks />
-                <p>Chinese</p>
+                <p style={{ color: '#fff'}}>Chinese</p>
             </NavLink>
         </div>
     )
