@@ -5,7 +5,9 @@ import '@splidejs/splide/dist/css/splide.min.css';
 import { Skeleton, Typography } from "@mui/material";
 
 const Veggie = () => {
-    const API_KEY = process.env.REACT_APP_API_KEY || '81bdc134fb73435fbb14311ed16cb557'; // Use environment variable for API key
+    // Use import.meta.env for environment variables in Vite
+    const API_KEY = import.meta.env.VITE_REACT_APP_API_KEY || '81bdc134fb73435fbb14311ed16cb557';
+    console.log("API Key:", API_KEY); // Debugging
 
     const [veggie, setVeggie] = useState([]); // State to store recipes
     const [loading, setLoading] = useState(true); // Loading state
@@ -62,7 +64,6 @@ const Veggie = () => {
         getVeggie();
     }, []); // Fetch data on component mount
 
-    // Show skeleton loader while loading
     if (loading) {
         return (
             <Splide options={{ perPage: 4, pagination: false, gap: '2rem' }}>
@@ -75,7 +76,6 @@ const Veggie = () => {
         );
     }
 
-    // Show error message if API fails
     if (error) {
         return (
             <Typography color="error" align="center" sx={{ mt: 5 }}>
@@ -84,16 +84,14 @@ const Veggie = () => {
         );
     }
 
-    // Show fallback if no recipes are found
-    if (veggie.length === 0) {
+    if (!Array.isArray(veggie) || veggie.length === 0) {
         return (
             <Typography align="center" sx={{ mt: 5 }}>
-                No vegetarian recipes found. Please try again later.
+                No vegetarian recipes available. Please check back later.
             </Typography>
         );
     }
 
-    // Render fetched vegetarian recipes
     return (
         <div className="veggie-container">
             <Typography variant="h4" align="center" gutterBottom>
@@ -105,7 +103,7 @@ const Veggie = () => {
                         <SplideSlide key={recipe.id}>
                             <RecipeCard data={recipe} />
                         </SplideSlide>
-                    ) : null // Skip invalid recipes
+                    ) : null
                 ))}
             </Splide>
         </div>

@@ -2,21 +2,36 @@ import React, { useState, useEffect } from 'react';
 import RecipeCard from "./RecipeCard";
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/splide/dist/css/splide.min.css';
-import { Skeleton } from "@mui/material";
+import { Skeleton, Typography } from "@mui/material";
 import axios from 'axios';
 
 const MyRecipes = () => {
-    const [myRecipes, setMyRecipes] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [myRecipes, setMyRecipes] = useState([]); // State to store custom recipes
+    const [loading, setLoading] = useState(true); // Loading state
+    const [error, setError] = useState(''); // Error state
 
     const getMyRecipes = async () => {
-        try {
-            const userId = localStorage.getItem('userId');
-            const response = await axios.get(`${process.env.VITE_REACT_APP_BACKEND_URL}/api/recipe/${userId}`);
-            setMyRecipes(response.data);
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            setError("User not found. Please log in again.");
             setLoading(false);
-        } catch (error) {
-            console.error("Error fetching custom recipes:", error);
+            return;
+        }
+
+        try {
+            console.log("Fetching recipes from:", process.env.VITE_REACT_APP_BACKEND_URL);
+            const response = await axios.get(`${process.env.VITE_REACT_APP_BACKEND_URL}/api/recipe/${userId}`);
+            console.log("API Response:", response.data);
+
+            if (Array.isArray(response.data)) {
+                setMyRecipes(response.data);
+            } else {
+                throw new Error("Invalid API response format.");
+            }
+        } catch (err) {
+            console.error("Error fetching custom recipes:", err);
+            setError("Failed to load your recipes. Please try again later.");
+        } finally {
             setLoading(false);
         }
     };
@@ -26,15 +41,14 @@ const MyRecipes = () => {
     }, []);
 
     if (loading) {
-        const number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         return (
             <Splide options={{
                 perPage: 4,
                 pagination: false,
                 gap: '2rem'
             }}>
-                {number.map((data) => (
-                    <SplideSlide key={data}>
+                {[...Array(10)].map((_, index) => (
+                    <SplideSlide key={index}>
                         <Skeleton height={200} width={300} />
                     </SplideSlide>
                 ))}
@@ -42,18 +56,38 @@ const MyRecipes = () => {
         );
     }
 
+    if (error) {
+        return (
+            <Typography color="error" align="center" sx={{ mt: 5 }}>
+                {error}
+            </Typography>
+        );
+    }
+
+    if (!Array.isArray(myRecipes) || myRecipes.length === 0) {
+        return (
+            <Typography align="center" sx={{ mt: 5 }}>
+                No custom recipes found. Add your favorite recipes to see them here!
+            </Typography>
+        );
+    }
+
     return (
         <div className="my-recipes-container">
-            <h1>My Recipes</h1>
+            <Typography variant="h4" align="center" gutterBottom>
+                My Recipes
+            </Typography>
             <Splide options={{
                 perPage: 4,
                 pagination: false,
                 gap: '2rem',
             }}>
                 {myRecipes.map((recipe) => (
-                    <SplideSlide key={recipe._id}>
-                        <RecipeCard data={{ ...recipe, isCustom: true }} />
-                    </SplideSlide>
+                    recipe && recipe._id ? (
+                        <SplideSlide key={recipe._id}>
+                            <RecipeCard data={{ ...recipe, isCustom: true }} />
+                        </SplideSlide>
+                    ) : null
                 ))}
             </Splide>
         </div>

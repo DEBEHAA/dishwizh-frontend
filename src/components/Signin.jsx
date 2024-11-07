@@ -28,6 +28,10 @@ const Signin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+  // Backend URL from environment variable
+  const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+  console.log("Backend URL:", BACKEND_URL); // Debugging
+
   // Toggle password visibility
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleMouseDownPassword = (event) => event.preventDefault();
@@ -41,7 +45,7 @@ const Signin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`https://dishwizh-api.onrender.com/api/auth/login`, formData);
+      const res = await axios.post(`${BACKEND_URL}/api/auth/login`, formData);
 
       // Assuming the backend returns an object with `userId`
       const userId = res.data.userId; // Make sure your backend is sending `userId` in the response
@@ -53,7 +57,7 @@ const Signin = () => {
       navigate('/*');
     } catch (err) {
       setError('Login failed. Invalid credentials.');
-      console.error("Login error:", err); // Log the error for further debugging
+      console.error('Login error:', err); // Log the error for further debugging
     }
   };
 
@@ -84,7 +88,7 @@ const Signin = () => {
         <Typography variant="h4" align="center" gutterBottom sx={{ color: '#1976d2' }}>
           Sign In to DishWizh
         </Typography>
-        
+
         {error && (
           <Typography color="error" align="center" sx={{ mb: 2 }}>
             {error}

@@ -10,7 +10,7 @@ const Cuisine = () => {
     const [error, setError] = useState(''); // Error state
     const params = useParams();
 
-    const API_KEY = process.env.REACT_APP_API_KEY || '81bdc134fb73435fbb14311ed16cb557'; // Use env variable with fallback
+    const API_KEY = process.env.REACT_APP_API_KEY || '81bdc134fb73435fbb14311ed16cb557';// Use env variable with fallback
 
     const getCuisine = useCallback(async (name) => {
         setLoading(true);
