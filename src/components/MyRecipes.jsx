@@ -12,7 +12,6 @@ const MyRecipes = () => {
 
     const getMyRecipes = async () => {
         const userId = localStorage.getItem('userId');
-
         if (!userId) {
             setError("User ID is missing. Please log in again.");
             setLoading(false);
@@ -20,18 +19,31 @@ const MyRecipes = () => {
         }
 
         try {
-            const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL; // Use import.meta.env
+            const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/$/, ''); // Ensure no trailing slash
             console.log("Backend URL:", BACKEND_URL); // Debugging
 
+            // Make GET request to fetch recipes
             const response = await axios.get(`${BACKEND_URL}/api/recipe/${userId}`);
+            console.log("API Response:", response.data); // Debug the response
+
             if (Array.isArray(response.data)) {
                 setMyRecipes(response.data);
             } else {
-                throw new Error("Invalid API response format.");
+                throw new Error("Unexpected response format.");
             }
         } catch (err) {
             console.error("Error fetching custom recipes:", err);
-            setError("Failed to load your recipes. Please try again later.");
+
+            if (err.response) {
+                // API responded but with an error status
+                setError(err.response.data.message || "Failed to fetch recipes.");
+            } else if (err.request) {
+                // Request was made but no response
+                setError("Network error. Please check your connection.");
+            } else {
+                // Something else went wrong
+                setError("An unexpected error occurred.");
+            }
         } finally {
             setLoading(false);
         }
