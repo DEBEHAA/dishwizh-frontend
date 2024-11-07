@@ -10,6 +10,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  CircularProgress,
 } from '@mui/material';
 
 const AddRecipe = () => {
@@ -22,8 +23,8 @@ const AddRecipe = () => {
   });
   const [image, setImage] = useState(null); // State for image file
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false); // Loading state
 
-  // Handle form field changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -32,40 +33,54 @@ const AddRecipe = () => {
     });
   };
 
-  // Handle image file change
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file && file.size > 5 * 1024 * 1024) {
+      setMessage('Image size should not exceed 5 MB.');
+      return;
+    }
+    if (file && !file.type.startsWith('image/')) {
+      setMessage('Only image files are allowed.');
+      return;
+    }
+    setImage(file);
   };
 
-  // Handle form submission
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
     if (!userId) {
-      setMessage('User ID is missing. Please log in again.');
+      setMessage('User ID is missing. Redirecting to login...');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+      return;
+    }
+
+    const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+    if (!backendUrl) {
+      setMessage('Server configuration error. Please try again later.');
       return;
     }
 
     const formDataToSend = new FormData();
-    formDataToSend.append('userId', userId); // Include userId in form data
+    formDataToSend.append('userId', userId);
     formDataToSend.append('recipeName', formData.recipeName);
     formDataToSend.append('cuisineType', formData.cuisineType);
     formDataToSend.append('ingredients', formData.ingredients);
     formDataToSend.append('steps', formData.steps);
     if (image) {
-      formDataToSend.append('image', image); // Append image file if selected
+      formDataToSend.append('image', image);
     }
 
     try {
+      setLoading(true);
       const response = await axios.post(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_URL}/api/recipe`,
+        `${backendUrl}/api/recipe`,
         formDataToSend,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        }
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
-
-      setMessage(response.data.message);
+      setMessage(response.data.message || 'Recipe added successfully!');
       setFormData({
         recipeName: '',
         cuisineType: '',
@@ -74,8 +89,16 @@ const AddRecipe = () => {
       });
       setImage(null);
     } catch (error) {
+      if (error.response) {
+        setMessage(`Error: ${error.response.data.message || 'Failed to add recipe.'}`);
+      } else if (error.request) {
+        setMessage('Network error. Please check your connection.');
+      } else {
+        setMessage('An unexpected error occurred. Please try again.');
+      }
       console.error('Error adding recipe:', error);
-      setMessage('Failed to add recipe.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -168,8 +191,9 @@ const AddRecipe = () => {
           color="primary"
           fullWidth
           sx={{ mt: 3 }}
+          disabled={loading}
         >
-          Add Recipe
+          {loading ? <CircularProgress size={24} /> : 'Add Recipe'}
         </Button>
       </form>
     </Box>

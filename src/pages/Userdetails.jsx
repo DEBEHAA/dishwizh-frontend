@@ -12,13 +12,12 @@ import {
   Typography,
   Box,
   Grid,
+  CircularProgress,
 } from '@mui/material';
 import './UserDetails.css';
 
 const UserDetails = () => {
-  // Retrieve userId from localStorage
   const userId = localStorage.getItem('userId');
-
   const [userData, setUserData] = useState({
     phone: '',
     address: '',
@@ -30,21 +29,25 @@ const UserDetails = () => {
   });
   const [message, setMessage] = useState('');
   const [isNewUser, setIsNewUser] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
       if (!userId) {
-        setMessage('User ID not found. Please sign in again.');
+        setMessage('User ID not found. Redirecting to login...');
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
         return;
       }
+
       try {
         const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+        setLoading(true);
         const response = await axios.get(`${backendUrl}/api/chef/${userId}`);
         if (response.data) {
-          setUserData(response.data); // Populate form with existing data
-          setIsNewUser(false); // Set to update mode
-        } else {
-          setIsNewUser(true); // Set to create mode
+          setUserData(response.data);
+          setIsNewUser(false);
         }
       } catch (error) {
         if (error.response && error.response.status === 404) {
@@ -53,6 +56,8 @@ const UserDetails = () => {
           console.error('Error fetching user data:', error);
           setMessage('Error fetching user details. Please try again later.');
         }
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -69,13 +74,18 @@ const UserDetails = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+
     if (!userId) {
-      setMessage('User ID is missing. Please sign in again.');
+      setMessage('User ID is missing. Redirecting to login...');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
       return;
     }
 
     try {
       const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+      setLoading(true);
       if (isNewUser) {
         await axios.post(`${backendUrl}/api/chef/${userId}`, userData);
         setMessage('User details added successfully!');
@@ -85,10 +95,25 @@ const UserDetails = () => {
       }
       setIsNewUser(false);
     } catch (error) {
-      console.error('Error updating user details:', error);
-      setMessage('Failed to update user details.');
+      if (error.response) {
+        setMessage(`Error: ${error.response.data.message}`);
+      } else if (error.request) {
+        setMessage('Network error. Please check your internet connection.');
+      } else {
+        setMessage('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box className="user-details-container" sx={{ maxWidth: 800, mx: 'auto', mt: 5 }}>
@@ -184,8 +209,8 @@ const UserDetails = () => {
           </Grid>
         </Grid>
 
-        <Button type="submit" variant="contained" color="primary" sx={{ mt: 3 }}>
-          {isNewUser ? 'Add Details' : 'Update Details'}
+        <Button type="submit" variant="contained" color="primary" sx={{ mt: 3 }} disabled={loading}>
+          {loading ? 'Submitting...' : isNewUser ? 'Add Details' : 'Update Details'}
         </Button>
       </form>
 
