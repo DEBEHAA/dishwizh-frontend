@@ -2,38 +2,45 @@ import './Cuisine.css';
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import RecipeCard from '../components/RecipeCard';
-import { API_KEY } from '../assets/API_KEY';
 import { Skeleton, Typography } from '@mui/material';
 
 const Cuisine = () => {
-    const [cuisine, setCuisine] = useState([]); // State to store cuisine recipes
+    const [cuisine, setCuisine] = useState([]); // State for cuisine recipes
     const [loading, setLoading] = useState(true); // Loading state
     const [error, setError] = useState(''); // Error state
     const params = useParams();
 
+    const API_KEY = process.env.REACT_APP_API_KEY || '81bdc134fb73435fbb14311ed16cb557'; // Use env variable with fallback
+
     const getCuisine = useCallback(async (name) => {
         setLoading(true);
-        setError(''); // Reset error state before fetching
+        setError(''); // Reset error state
         try {
             const response = await fetch(
                 `https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&cuisine=${name}`
             );
-            const recipeData = await response.json();
-            console.log("API Response:", recipeData);
 
-            if (recipeData.results && Array.isArray(recipeData.results)) {
-                setCuisine(recipeData.results); // Set the fetched recipes
+            if (!response.ok) {
+                throw new Error(`API responded with status: ${response.status}`);
+            }
+
+            const recipeData = await response.json();
+
+            console.log("API Response in Production:", recipeData);
+
+            if (Array.isArray(recipeData.results)) {
+                setCuisine(recipeData.results); // Set fetched recipes
             } else {
-                throw new Error("Invalid API response format.");
+                throw new Error("Invalid API response format");
             }
         } catch (err) {
             console.error("Failed to fetch cuisine data:", err);
-            setError('Failed to load cuisine recipes. Please try again later.');
-            setCuisine([]); // Ensure cuisine is set to an empty array
+            setError('Failed to load recipes. Please try again later.');
+            setCuisine([]); // Ensure empty array to prevent rendering issues
         } finally {
-            setLoading(false); // Stop loader
+            setLoading(false);
         }
-    }, []);
+    }, [API_KEY]);
 
     useEffect(() => {
         if (params.type) {
@@ -41,7 +48,7 @@ const Cuisine = () => {
         }
     }, [params.type, getCuisine]);
 
-    // Display loading skeletons while fetching data
+    // Show skeleton loader while fetching data
     if (loading) {
         return (
             <div className="cuisine-skeleton">
@@ -59,7 +66,7 @@ const Cuisine = () => {
         );
     }
 
-    // Display error message if an error occurs
+    // Show error message if API call fails
     if (error) {
         return (
             <Typography color="error" align="center" sx={{ mt: 5 }}>
@@ -68,7 +75,7 @@ const Cuisine = () => {
         );
     }
 
-    // Fallback if no recipes are found
+    // Show fallback if no recipes are found
     if (cuisine.length === 0) {
         return (
             <Typography align="center" sx={{ mt: 5 }}>
@@ -77,7 +84,7 @@ const Cuisine = () => {
         );
     }
 
-    // Display fetched recipes
+    // Render fetched cuisine recipes
     return (
         <div className="cuisine-container">
             {cuisine.map((data) => (

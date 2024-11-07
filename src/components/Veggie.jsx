@@ -5,11 +5,11 @@ import '@splidejs/splide/dist/css/splide.min.css';
 import { Skeleton, Typography } from "@mui/material";
 
 const Veggie = () => {
-    const API_KEY = '71ee729777aa439ba75c472c3bca40b4';
+    const API_KEY = process.env.REACT_APP_API_KEY || '81bdc134fb73435fbb14311ed16cb557'; // Use environment variable for API key
 
     const [veggie, setVeggie] = useState([]); // State to store recipes
     const [loading, setLoading] = useState(true); // Loading state
-    const [error, setError] = useState(''); // Error message
+    const [error, setError] = useState(''); // Error state
 
     const fetchVeggieData = async () => {
         try {
@@ -17,8 +17,11 @@ const Veggie = () => {
                 `https://api.spoonacular.com/recipes/random?apiKey=${API_KEY}&number=10&tags=vegetarian`
             );
             const data = await api.json();
+
+            console.log("API Response:", data); // Debug the API response
+
             if (data?.recipes && Array.isArray(data.recipes)) {
-                localStorage.setItem('veggie', JSON.stringify(data.recipes)); // Store in localStorage
+                localStorage.setItem('veggie', JSON.stringify(data.recipes)); // Cache data in localStorage
                 setVeggie(data.recipes); // Set recipes to state
             } else {
                 throw new Error("Invalid API response format.");
@@ -26,39 +29,40 @@ const Veggie = () => {
         } catch (err) {
             console.error("Error fetching veggie data:", err);
             setError("Failed to load vegetarian recipes. Please try again later.");
-            setVeggie([]); // Ensure veggie is set to an empty array to avoid rendering issues
+            setVeggie([]); // Ensure state is reset to prevent rendering issues
         } finally {
-            setLoading(false); // Stop loading state
+            setLoading(false); // Stop loading spinner
         }
     };
 
     const getVeggie = async () => {
-        const check = localStorage.getItem('veggie');
+        const cachedVeggie = localStorage.getItem('veggie'); // Retrieve from localStorage
 
-        if (check) {
+        if (cachedVeggie) {
             try {
-                const parsedVeggie = JSON.parse(check);
+                const parsedVeggie = JSON.parse(cachedVeggie); // Parse stored data
                 if (Array.isArray(parsedVeggie)) {
-                    setVeggie(parsedVeggie);
+                    setVeggie(parsedVeggie); // Use cached data if valid
                 } else {
-                    console.warn("Invalid localStorage data. Fetching new data...");
-                    localStorage.removeItem('veggie');
-                    await fetchVeggieData();
+                    console.warn("Invalid localStorage data. Fetching fresh data...");
+                    localStorage.removeItem('veggie'); // Clear corrupted data
+                    await fetchVeggieData(); // Fetch fresh data
                 }
             } catch (err) {
                 console.error("Error parsing localStorage data:", err);
-                localStorage.removeItem('veggie');
-                await fetchVeggieData();
+                localStorage.removeItem('veggie'); // Clear corrupted data
+                await fetchVeggieData(); // Fetch fresh data
             }
         } else {
-            await fetchVeggieData();
+            await fetchVeggieData(); // Fetch fresh data if no cache
         }
     };
 
     useEffect(() => {
         getVeggie();
-    }, []);
+    }, []); // Fetch data on component mount
 
+    // Show skeleton loader while loading
     if (loading) {
         return (
             <Splide options={{ perPage: 4, pagination: false, gap: '2rem' }}>
@@ -71,6 +75,7 @@ const Veggie = () => {
         );
     }
 
+    // Show error message if API fails
     if (error) {
         return (
             <Typography color="error" align="center" sx={{ mt: 5 }}>
@@ -79,6 +84,7 @@ const Veggie = () => {
         );
     }
 
+    // Show fallback if no recipes are found
     if (veggie.length === 0) {
         return (
             <Typography align="center" sx={{ mt: 5 }}>
@@ -87,6 +93,7 @@ const Veggie = () => {
         );
     }
 
+    // Render fetched vegetarian recipes
     return (
         <div className="veggie-container">
             <Typography variant="h4" align="center" gutterBottom>
@@ -98,7 +105,7 @@ const Veggie = () => {
                         <SplideSlide key={recipe.id}>
                             <RecipeCard data={recipe} />
                         </SplideSlide>
-                    ) : null
+                    ) : null // Skip invalid recipes
                 ))}
             </Splide>
         </div>

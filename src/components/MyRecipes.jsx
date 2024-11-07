@@ -12,7 +12,7 @@ const MyRecipes = () => {
     const getMyRecipes = async () => {
         try {
             const userId = localStorage.getItem('userId');
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/recipe/${userId}`);
+            const response = await axios.get(`${process.env.VITE_REACT_APP_BACKEND_URL}/api/recipe/${userId}`);
             setMyRecipes(response.data);
             setLoading(false);
         } catch (error) {

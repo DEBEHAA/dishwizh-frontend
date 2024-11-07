@@ -1,28 +1,38 @@
 import { useEffect, useState } from 'react';
 import './Recipe.css';
 import { useParams } from 'react-router-dom';
-import { API_KEY } from '../assets/API_KEY';
-import { Button, Skeleton } from '@mui/material';
+import { Button, Skeleton, Typography } from '@mui/material';
 
 const Recipe = () => {
-    const [details, setDetails] = useState();
-    const [active, setActive] = useState('summary');
-    const [loading, setLoading] = useState(true); // Added loading state
+    const [details, setDetails] = useState(null); // Recipe details state
+    const [active, setActive] = useState('summary'); // Active tab state
+    const [loading, setLoading] = useState(true); // Loading state
+    const [error, setError] = useState(''); // Error state
     const params = useParams();
+
+    const API_KEY = process.env.REACT_APP_API_KEY || '81bdc134fb73435fbb14311ed16cb557'; // Use environment variable
 
     const fetchDetails = async () => {
         setLoading(true);
+        setError(''); // Reset error state
         try {
             const response = await fetch(
                 `https://api.spoonacular.com/recipes/${params.name}/information?apiKey=${API_KEY}`
             );
+
+            if (!response.ok) {
+                throw new Error(`API responded with status: ${response.status}`);
+            }
+
             const detailsData = await response.json();
             console.log("API Response:", detailsData); // Log API data
             setDetails(detailsData);
-        } catch (error) {
-            console.error("Failed to fetch recipe details:", error);
+        } catch (err) {
+            console.error("Failed to fetch recipe details:", err);
+            setError('Failed to load recipe details. Please try again later.');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     useEffect(() => {
@@ -42,34 +52,49 @@ const Recipe = () => {
                 </div>
                 <div className="recipe-shimmer-right">
                     <div className="btn-shimmer-right">
-                        <Skeleton variant="rounded" animation="wave" height={35} width={120} />
-                        <Skeleton variant="rounded" animation="wave" height={35} width={120} />
-                        <Skeleton variant="rounded" animation="wave" height={35} width={120} />
+                        {[...Array(3)].map((_, index) => (
+                            <Skeleton key={index} variant="rounded" animation="wave" height={35} width={120} />
+                        ))}
                     </div>
                     <div className="shimmer-content-right">
                         <Skeleton variant="text" sx={{ fontSize: '2.5rem' }} animation="wave" />
-                        <div className="text-container-shimmer">
-                            {[...Array(12)].map((_, index) => (
-                                <Skeleton
-                                    key={index}
-                                    variant="text"
-                                    sx={{ fontSize: '1.5rem' }}
-                                    animation="wave"
-                                />
-                            ))}
-                        </div>
+                        {[...Array(12)].map((_, index) => (
+                            <Skeleton key={index} variant="text" sx={{ fontSize: '1.5rem' }} animation="wave" />
+                        ))}
                     </div>
                 </div>
             </div>
         );
     }
 
+    if (error) {
+        return (
+            <Typography color="error" align="center" sx={{ mt: 5 }}>
+                {error}
+            </Typography>
+        );
+    }
+
+    if (!details) {
+        return (
+            <Typography align="center" sx={{ mt: 5 }}>
+                No recipe details found.
+            </Typography>
+        );
+    }
+
     return (
         <div className="recipe-container-main">
-            <h1>{details?.title || "No Title Available"}</h1>
+            <Typography variant="h4" align="center" gutterBottom>
+                {details?.title || "No Title Available"}
+            </Typography>
             <div className="recipe-container">
                 <div className="recipe-container-left">
-                    <img src={details?.image} alt={details?.title || "Recipe"} className="recipe-imgs" />
+                    <img
+                        src={details?.image || 'https://via.placeholder.com/500'}
+                        alt={details?.title || "Recipe"}
+                        className="recipe-imgs"
+                    />
                 </div>
                 <div className="recipe-container-right">
                     <div className="btn-container">
@@ -98,12 +123,20 @@ const Recipe = () => {
                     {active === 'summary' && (
                         <div className="recipe-right-main">
                             <div className="summary">
-                                <h2>Summary</h2>
-                                <p dangerouslySetInnerHTML={{ __html: details?.summary || "No summary available." }}></p>
+                                <Typography variant="h6">Summary</Typography>
+                                <Typography
+                                    dangerouslySetInnerHTML={{
+                                        __html: details?.summary || "No summary available.",
+                                    }}
+                                ></Typography>
                             </div>
                             <div className="instructions">
-                                <h2>Instructions</h2>
-                                <p dangerouslySetInnerHTML={{ __html: details?.instructions || "No instructions available." }}></p>
+                                <Typography variant="h6">Instructions</Typography>
+                                <Typography
+                                    dangerouslySetInnerHTML={{
+                                        __html: details?.instructions || "No instructions available.",
+                                    }}
+                                ></Typography>
                             </div>
                         </div>
                     )}
@@ -111,29 +144,28 @@ const Recipe = () => {
                         Array.isArray(details?.extendedIngredients) ? (
                             details.extendedIngredients.map((data) => (
                                 <div className="ingredient-bar" key={data?.id}>
-                                    <h3 className="ingredients-h3">
-                                        <p>{data?.name}</p>
-                                        <p>{data?.amount} grams</p>
-                                    </h3>
+                                    <Typography variant="body1">
+                                        {data?.name}: {data?.amount} {data?.unit}
+                                    </Typography>
                                 </div>
                             ))
                         ) : (
-                            <p>No ingredients available.</p>
+                            <Typography>No ingredients available.</Typography>
                         )
                     )}
                     {active === 'steps' && (
                         Array.isArray(details?.analyzedInstructions?.[0]?.steps) ? (
                             details.analyzedInstructions[0].steps.map((data) => (
                                 <div className="step" key={data?.number}>
-                                    <h2>Step - {data?.number}</h2>
-                                    <p>{data?.step}</p>
-                                    <h4>
-                                        Ingredients - {data?.ingredients?.[0]?.name || "No ingredients specified"}
-                                    </h4>
+                                    <Typography variant="h6">Step {data?.number}</Typography>
+                                    <Typography>{data?.step}</Typography>
+                                    <Typography variant="body2">
+                                        Ingredients: {data?.ingredients?.[0]?.name || "No ingredients specified"}
+                                    </Typography>
                                 </div>
                             ))
                         ) : (
-                            <p>No steps available.</p>
+                            <Typography>No steps available.</Typography>
                         )
                     )}
                 </div>
