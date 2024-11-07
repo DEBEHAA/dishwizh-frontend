@@ -13,13 +13,15 @@ import {
   CircularProgress,
 } from '@mui/material';
 
+const CUISINE_OPTIONS = ['Italian', 'Mexican', 'Indian', 'Chinese', 'American'];
+
 const AddRecipe = () => {
   const userId = localStorage.getItem('userId'); // Retrieve the userId from localStorage
   const [formData, setFormData] = useState({
     recipeName: '',
     cuisineType: '',
     ingredients: '',
-    steps: ''
+    steps: '',
   });
   const [image, setImage] = useState(null); // State for image file
   const [message, setMessage] = useState('');
@@ -29,7 +31,7 @@ const AddRecipe = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
@@ -85,7 +87,7 @@ const AddRecipe = () => {
         recipeName: '',
         cuisineType: '',
         ingredients: '',
-        steps: ''
+        steps: '',
       });
       setImage(null);
     } catch (error) {
@@ -108,7 +110,11 @@ const AddRecipe = () => {
         Add New Recipe
       </Typography>
       {message && (
-        <Typography color={message.includes('success') ? 'primary' : 'error'} align="center" sx={{ mb: 2 }}>
+        <Typography
+          color={message.includes('success') ? 'primary' : 'error'}
+          align="center"
+          sx={{ mb: 2 }}
+        >
           {message}
         </Typography>
       )}
@@ -134,11 +140,11 @@ const AddRecipe = () => {
                 onChange={handleInputChange}
                 label="Cuisine Type"
               >
-                <MenuItem value="Italian">Italian</MenuItem>
-                <MenuItem value="Mexican">Mexican</MenuItem>
-                <MenuItem value="Indian">Indian</MenuItem>
-                <MenuItem value="Chinese">Chinese</MenuItem>
-                <MenuItem value="American">American</MenuItem>
+                {CUISINE_OPTIONS.map((cuisine) => (
+                  <MenuItem key={cuisine} value={cuisine}>
+                    {cuisine}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
@@ -169,11 +175,7 @@ const AddRecipe = () => {
             />
           </Grid>
           <Grid item xs={12}>
-            <Button
-              variant="contained"
-              component="label"
-              fullWidth
-            >
+            <Button variant="contained" component="label" fullWidth>
               Upload Image
               <input
                 type="file"
