@@ -25,16 +25,17 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [darkMode, setDarkMode] = useState(false);
 
-    const API_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+    // Correctly access environment variables in Vite
+    const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/+$/, '');
 
     // Fetch data
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const analyticsResponse = await axios.get(`${API_URL}/api/admin/analytics`);
+                const analyticsResponse = await axios.get(`${backendURL}/api/admin/analytics`);
                 setAnalytics(analyticsResponse.data);
 
-                const usersResponse = await axios.get(`${API_URL}/api/admin/users`);
+                const usersResponse = await axios.get(`${backendURL}/api/admin/users`);
                 setUsers(usersResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -44,18 +45,16 @@ const AdminDashboard = () => {
         };
 
         fetchData();
-    }, []);
+    }, [backendURL]);
 
     const handleDeleteUser = async (userId) => {
         try {
-            await axios.delete(`${API_URL}/api/admin/users/${userId}`);
+            await axios.delete(`${backendURL}/api/admin/users/${userId}`);
             setUsers(users.filter((user) => user._id !== userId));
         } catch (error) {
             console.error('Error deleting user:', error);
         }
     };
-
-    const theme = useTheme();
 
     const toggleDarkMode = () => {
         setDarkMode((prevMode) => !prevMode);
@@ -123,39 +122,15 @@ const AdminDashboard = () => {
                 {/* Summary Cards */}
                 <Grid container spacing={3} sx={{ mb: 5 }}>
                     <Grid item xs={12} sm={6}>
-                        <Paper
-                            sx={{
-                                p: 3,
-                                borderRadius: '10px',
-                                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-                                backdropFilter: 'blur(8px)',
-                                border: '1px solid rgba(255, 255, 255, 0.18)',
-                            }}
-                        >
-                            <Typography variant="h6" sx={{ color: 'primary.main' }}>
-                                Total Users
-                            </Typography>
-                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-                                {analytics.totalUsers || 0}
-                            </Typography>
+                        <Paper sx={{ p: 3 }}>
+                            <Typography variant="h6">Total Users</Typography>
+                            <Typography variant="h4">{analytics.totalUsers || 0}</Typography>
                         </Paper>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        <Paper
-                            sx={{
-                                p: 3,
-                                borderRadius: '10px',
-                                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-                                backdropFilter: 'blur(8px)',
-                                border: '1px solid rgba(255, 255, 255, 0.18)',
-                            }}
-                        >
-                            <Typography variant="h6" sx={{ color: 'primary.main' }}>
-                                Total Recipes
-                            </Typography>
-                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-                                {analytics.totalRecipes || 0}
-                            </Typography>
+                        <Paper sx={{ p: 3 }}>
+                            <Typography variant="h6">Total Recipes</Typography>
+                            <Typography variant="h4">{analytics.totalRecipes || 0}</Typography>
                         </Paper>
                     </Grid>
                 </Grid>
@@ -163,34 +138,14 @@ const AdminDashboard = () => {
                 {/* Charts */}
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={6}>
-                        <Paper
-                            sx={{
-                                p: 3,
-                                borderRadius: '10px',
-                                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-                                backdropFilter: 'blur(8px)',
-                                border: '1px solid rgba(255, 255, 255, 0.18)',
-                            }}
-                        >
-                            <Typography variant="h6" sx={{ color: 'primary.main', mb: 2 }}>
-                                Daily User Registrations
-                            </Typography>
+                        <Paper sx={{ p: 3 }}>
+                            <Typography variant="h6">Daily User Registrations</Typography>
                             <Bar data={barData} />
                         </Paper>
                     </Grid>
                     <Grid item xs={12} md={6}>
-                        <Paper
-                            sx={{
-                                p: 3,
-                                borderRadius: '10px',
-                                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-                                backdropFilter: 'blur(8px)',
-                                border: '1px solid rgba(255, 255, 255, 0.18)',
-                            }}
-                        >
-                            <Typography variant="h6" sx={{ color: 'primary.main', mb: 2 }}>
-                                Overall Distribution
-                            </Typography>
+                        <Paper sx={{ p: 3 }}>
+                            <Typography variant="h6">Overall Distribution</Typography>
                             <Pie data={pieData} options={pieOptions} />
                         </Paper>
                     </Grid>
@@ -198,18 +153,10 @@ const AdminDashboard = () => {
 
                 {/* User List */}
                 <Box sx={{ mt: 5 }}>
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                    <Typography variant="h5" gutterBottom>
                         Manage Users
                     </Typography>
-                    <TableContainer
-                        component={Paper}
-                        sx={{
-                            borderRadius: '10px',
-                            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-                            backdropFilter: 'blur(8px)',
-                            border: '1px solid rgba(255, 255, 255, 0.18)',
-                        }}
-                    >
+                    <TableContainer component={Paper}>
                         <Table>
                             <TableHead>
                                 <TableRow>
