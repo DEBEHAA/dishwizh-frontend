@@ -1,4 +1,3 @@
-// components/RecipeCard.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
@@ -10,18 +9,22 @@ const RecipeCard = ({ data }) => {
     // Check if the recipe is a favorite when the component mounts
     useEffect(() => {
         const storedFavorites = JSON.parse(localStorage.getItem('favorites')) || [];
-        const isRecipeFavorite = storedFavorites.some(recipe => recipe.id === data.id || recipe._id === data._id);
+        const isRecipeFavorite = storedFavorites.some(
+            (recipe) => recipe.id === data.id || recipe._id === data._id
+        );
         setIsFavorite(isRecipeFavorite);
     }, [data.id, data._id]);
 
     // Handle toggling favorite status in localStorage
     const handleFavoriteToggle = () => {
         const storedFavorites = JSON.parse(localStorage.getItem('favorites')) || [];
-        
+
         let updatedFavorites;
         if (isFavorite) {
             // Remove from favorites
-            updatedFavorites = storedFavorites.filter(recipe => recipe.id !== data.id && recipe._id !== data._id);
+            updatedFavorites = storedFavorites.filter(
+                (recipe) => recipe.id !== data.id && recipe._id !== data._id
+            );
         } else {
             // Add to favorites
             updatedFavorites = [...storedFavorites, data];
@@ -33,8 +36,9 @@ const RecipeCard = ({ data }) => {
     };
 
     // Determine the image source
+    const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_URL || 'http://localhost:5000';
     const imageSrc = data.isCustom
-        ? `${process.env.VITE_REACT_APP_BACKEND_URL}${data.imageUrl}`
+        ? `${backendURL}${data.imageUrl}`
         : data.image;
 
     return (

@@ -7,26 +7,42 @@ import Search from "../components/Search";
 import Searched from "./Searched";
 import Recipe from "./Recipe";
 import Header from "../components/Header";
-import Favorites from "./Favorites";  // Import Favorites component
-import UserDetails from './Userdetails';  // Import UserDetails component
+import Favorites from "./Favorites";
+import UserDetails from './Userdetails';
 import AddRecipe from './AddRecipe';
+import UserProfile from './UserProfile';
+import UserList from './UserList';
+import AdminDashboard from './admin/AdminDashboard';
 
 const Pages = () => {
     return (
         <>
-            {/* Keep Header static across all pages */}
             <Header />
 
             <div className="pages-container">
                 <Routes>
-                    {/* Home Page */}
-                    <Route path="/*" element={
-                        <>
-                            <Search />
-                            <Category />
-                            <Home />
-                        </>
-                    } />
+                    {/* Admin Dashboard (specific route) */}
+                    <Route path="/admin" element={<AdminDashboard />} />
+
+                    {/* User List Page */}
+                    <Route path="/users" element={<UserList />} />
+
+                    {/* User Profile Page */}
+                    <Route path="/user/:userId" element={<UserProfile />} />
+
+                    {/* Favorites Page */}
+                    <Route path="/favorites" element={<Favorites />} />
+
+                    {/* User Details Page */}
+                    <Route path="/userdetails" element={<UserDetails />} />
+
+                    {/* Recipe Adding Page */}
+                    <Route path="/addrecipe" element={<AddRecipe />} />
+
+                    {/* Recipe Pages */}
+                    <Route path="/searched/:search/recipe/:name" element={<Recipe />} />
+                    <Route path="/cuisine/:type/recipe/:name" element={<Recipe />} />
+                    <Route path="/recipe/:name" element={<Recipe />} />
 
                     {/* Cuisine Page */}
                     <Route path="/cuisine/:type" element={
@@ -46,18 +62,14 @@ const Pages = () => {
                         </>
                     } />
 
-                    {/* Recipe Pages */}
-                    <Route path="/searched/:search/recipe/:name" element={<Recipe />} />
-                    <Route path="/cuisine/:type/recipe/:name" element={<Recipe />} />
-                    <Route path="/recipe/:name" element={<Recipe />} />
-
-                    {/* Favorites Page */}
-                    <Route path="/favorites" element={<Favorites />} />
-
-                    {/* User Details Page */}
-                    <Route path="/userdetails" element={<UserDetails />} /> 
-                    {/* Recipe adding Page */}
-                    <Route path="/addrecipe" element={<AddRecipe />} />
+                    {/* Home Page (Wildcard Route - Always Last) */}
+                    <Route path="/*" element={
+                        <>
+                            <Search />
+                            <Category />
+                            <Home />
+                        </>
+                    } />
                 </Routes>
             </div>
         </>

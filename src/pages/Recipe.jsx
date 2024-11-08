@@ -10,7 +10,8 @@ const Recipe = () => {
     const [error, setError] = useState(''); // Error state
     const params = useParams();
 
-    const API_KEY = process.env.REACT_APP_API_KEY || '81bdc134fb73435fbb14311ed16cb557'; // Use environment variable
+    // Access environment variable using import.meta.env
+    const API_KEY = import.meta.env.VITE_REACT_APP_API_KEY || '81bdc134fb73435fbb14311ed16cb557';
 
     const fetchDetails = async () => {
         setLoading(true);
@@ -25,10 +26,10 @@ const Recipe = () => {
             }
 
             const detailsData = await response.json();
-            console.log("API Response:", detailsData); // Log API data
+            console.log('API Response:', detailsData); // Log API data
             setDetails(detailsData);
         } catch (err) {
-            console.error("Failed to fetch recipe details:", err);
+            console.error('Failed to fetch recipe details:', err);
             setError('Failed to load recipe details. Please try again later.');
         } finally {
             setLoading(false);
@@ -86,13 +87,13 @@ const Recipe = () => {
     return (
         <div className="recipe-container-main">
             <Typography variant="h4" align="center" gutterBottom>
-                {details?.title || "No Title Available"}
+                {details?.title || 'No Title Available'}
             </Typography>
             <div className="recipe-container">
                 <div className="recipe-container-left">
                     <img
                         src={details?.image || 'https://via.placeholder.com/500'}
-                        alt={details?.title || "Recipe"}
+                        alt={details?.title || 'Recipe'}
                         className="recipe-imgs"
                     />
                 </div>
@@ -126,7 +127,7 @@ const Recipe = () => {
                                 <Typography variant="h6">Summary</Typography>
                                 <Typography
                                     dangerouslySetInnerHTML={{
-                                        __html: details?.summary || "No summary available.",
+                                        __html: details?.summary || 'No summary available.',
                                     }}
                                 ></Typography>
                             </div>
@@ -134,7 +135,7 @@ const Recipe = () => {
                                 <Typography variant="h6">Instructions</Typography>
                                 <Typography
                                     dangerouslySetInnerHTML={{
-                                        __html: details?.instructions || "No instructions available.",
+                                        __html: details?.instructions || 'No instructions available.',
                                     }}
                                 ></Typography>
                             </div>
@@ -160,7 +161,7 @@ const Recipe = () => {
                                     <Typography variant="h6">Step {data?.number}</Typography>
                                     <Typography>{data?.step}</Typography>
                                     <Typography variant="body2">
-                                        Ingredients: {data?.ingredients?.[0]?.name || "No ingredients specified"}
+                                        Ingredients: {data?.ingredients?.[0]?.name || 'No ingredients specified'}
                                     </Typography>
                                 </div>
                             ))

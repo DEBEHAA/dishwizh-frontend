@@ -7,7 +7,7 @@ const FavoriteIcon = ({ isFavorite, onToggle }) => {
             {isFavorite ? (
                 <Favorite style={{ color: 'red', fontSize: '24px' }} />
             ) : (
-                <FavoriteBorder style={{ color: 'white', fontSize: '24px' }} />
+                <FavoriteBorder style={{ color: 'black', fontSize: '24px' }} />
             )}
         </div>
     );
