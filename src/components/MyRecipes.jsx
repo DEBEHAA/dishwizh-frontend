@@ -19,10 +19,10 @@ const MyRecipes = () => {
     }
 
     try {
-        const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/+$/, '');
-      console.log('Fetching recipes from:', `${BACKEND_URL}/api/recipe/user/${userId}`); // Debug API URL
+      const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/+$/, ''); // Ensure no trailing slashes
+      console.log('Fetching recipes from:', `${backendURL}/api/recipe/user/${userId}`); // Corrected variable
 
-      const response = await axios.get(`${BACKEND_URL}/api/recipe/user/${userId}`);
+      const response = await axios.get(`${backendURL}/api/recipe/user/${userId}`); // Corrected variable
       if (response.status === 200 && Array.isArray(response.data)) {
         console.log('Recipes fetched:', response.data); // Debug fetched recipes
         setMyRecipes(response.data);
