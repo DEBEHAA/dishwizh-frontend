@@ -19,7 +19,7 @@ const MyRecipes = () => {
     }
 
     try {
-      const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+        const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/+$/, '');
       console.log('Fetching recipes from:', `${BACKEND_URL}/api/recipe/user/${userId}`); // Debug API URL
 
       const response = await axios.get(`${BACKEND_URL}/api/recipe/user/${userId}`);
