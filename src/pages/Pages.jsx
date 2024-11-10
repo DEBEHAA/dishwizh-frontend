@@ -13,8 +13,9 @@ import AddRecipe from './AddRecipe';
 import UserProfile from './UserProfile';
 import UserList from './UserList';
 import AdminDashboard from './admin/AdminDashboard';
-import ChatPage from './chat/ChatPage'; // Import ChatPage component
-import Chat from './chat/Chat'; // Import Chat component
+import ChatPage from './chat/ChatPage'; 
+import Chat from './chat/Chat'; 
+import RecipeDetails from '../components/RecipeDetails';
 
 const Pages = () => {
     return (
@@ -49,6 +50,7 @@ const Pages = () => {
                     <Route path="/searched/:search/recipe/:name" element={<Recipe />} />
                     <Route path="/cuisine/:type/recipe/:name" element={<Recipe />} />
                     <Route path="/recipe/:name" element={<Recipe />} />
+                    <Route path="/recipes/:id" element={<RecipeDetails />} />
 
                     {/* Cuisine Page */}
                     <Route path="/cuisine/:type" element={

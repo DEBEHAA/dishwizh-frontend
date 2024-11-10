@@ -17,6 +17,8 @@ import {
   AccordionDetails,
   Checkbox,
   FormControlLabel,
+  CircularProgress,
+  IconButton,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Bar, Pie } from 'react-chartjs-2';
@@ -38,19 +40,31 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!backendURL) {
+        console.error('Backend URL is not defined.');
+        alert('Backend URL is missing. Please check your environment variables.');
+        return;
+      }
+
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        alert('User ID is missing. Please log in.');
+        return;
+      }
+
       try {
-        const analyticsResponse = await axios.post(`${backendURL}/api/admin/analytics`);
+        const analyticsResponse = await axios.post(`${backendURL}/api/admin/analytics`, { userId });
         setAnalytics(analyticsResponse.data);
 
-        const usersResponse = await axios.get(`${backendURL}/api/admin/users`);
+        const usersResponse = await axios.post(`${backendURL}/api/admin/users`, { userId });
         setUsers(usersResponse.data);
 
-        const recipesResponse = await axios.get(`${backendURL}/api/admin/recipes`);
+        const recipesResponse = await axios.post(`${backendURL}/api/admin/recipes`, { userId });
         setRecipes(recipesResponse.data);
         setFilteredRecipes(recipesResponse.data);
       } catch (error) {
         console.error('Error fetching data:', error);
-        alert('Failed to load data. Ensure you have admin privileges.');
+        alert(`Failed to load data. ${error.response?.data?.message || ''}`);
       } finally {
         setLoading(false);
       }
@@ -61,7 +75,8 @@ const AdminDashboard = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      await axios.delete(`${backendURL}/api/admin/users/${userId}`);
+      const adminId = localStorage.getItem('userId');
+      await axios.delete(`${backendURL}/api/admin/users/${userId}`, { data: { userId: adminId } });
       setUsers(users.filter((user) => user._id !== userId));
       alert('User deleted successfully');
     } catch (error) {
@@ -72,7 +87,8 @@ const AdminDashboard = () => {
 
   const handleApproveRecipe = async (recipeId) => {
     try {
-      await axios.put(`${backendURL}/api/admin/recipes/approve/${recipeId}`);
+      const adminId = localStorage.getItem('userId');
+      await axios.put(`${backendURL}/api/admin/recipes/approve/${recipeId}`, { userId: adminId });
       setRecipes((prev) =>
         prev.map((recipe) =>
           recipe._id === recipeId ? { ...recipe, status: 'approved' } : recipe
@@ -87,7 +103,8 @@ const AdminDashboard = () => {
 
   const handleDeclineRecipe = async (recipeId) => {
     try {
-      await axios.delete(`${backendURL}/api/admin/recipes/${recipeId}`);
+      const adminId = localStorage.getItem('userId');
+      await axios.delete(`${backendURL}/api/admin/recipes/${recipeId}`, { data: { userId: adminId } });
       setRecipes((prev) => prev.filter((recipe) => recipe._id !== recipeId));
       alert('Recipe declined successfully!');
     } catch (error) {
@@ -127,7 +144,7 @@ const AdminDashboard = () => {
     datasets: [
       {
         label: 'Daily New Users',
-        data: analytics.dailyNewUsers?.map((item) => item.count) || [],
+        data: analytics.dailyNewUsers?.map((item) => item.count) || [0],
         backgroundColor: 'rgba(54, 162, 235, 0.6)',
       },
     ],
@@ -138,10 +155,23 @@ const AdminDashboard = () => {
     datasets: [
       {
         data: [
-          recipes.filter((recipe) => recipe.status === 'approved').length,
-          recipes.filter((recipe) => recipe.status === 'pending').length,
+          recipes.filter((recipe) => recipe.status === 'approved').length || 0,
+          recipes.filter((recipe) => recipe.status === 'pending').length || 0,
         ],
         backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+      },
+    ],
+  };
+
+  const userRecipeData = {
+    labels: users.map((user) => user.name || 'Unknown User'),
+    datasets: [
+      {
+        label: 'Number of Recipes',
+        data: users.map((user) =>
+          recipes.filter((recipe) => recipe.userId === user._id).length
+        ),
+        backgroundColor: 'rgba(153, 102, 255, 0.6)',
       },
     ],
   };
@@ -149,7 +179,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Typography variant="h6">Loading...</Typography>
+        <CircularProgress />
       </Box>
     );
   }
@@ -198,6 +228,16 @@ const AdminDashboard = () => {
           </Grid>
         </Grid>
 
+        {/* User Recipes Chart */}
+        <Grid container spacing={3} sx={{ mt: 5 }}>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6">Recipes by Users</Typography>
+              <Bar data={userRecipeData} />
+            </Paper>
+          </Grid>
+        </Grid>
+
         {/* Manage Recipes */}
         <Box sx={{ mt: 5 }}>
           <Typography variant="h5" gutterBottom>
@@ -241,15 +281,22 @@ const AdminDashboard = () => {
                     <TableCell>{recipe.recipeName}</TableCell>
                     <TableCell>{recipe.status}</TableCell>
                     <TableCell>
-                      <Typography variant="body2">
-                        <strong>Cuisine Type:</strong> {recipe.cuisineType}
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Ingredients:</strong> {recipe.ingredients.join(', ')}
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Steps:</strong> {recipe.steps}
-                      </Typography>
+                      <Accordion>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                          <Typography><strong>Ingredients</strong></Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Typography>{recipe.ingredients.join(', ')}</Typography>
+                        </AccordionDetails>
+                      </Accordion>
+                      <Accordion>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                          <Typography><strong>Steps</strong></Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Typography>{recipe.steps}</Typography>
+                        </AccordionDetails>
+                      </Accordion>
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 1 }}>
@@ -290,6 +337,46 @@ const AdminDashboard = () => {
               </TableBody>
             </Table>
           </TableContainer>
+        </Box>
+
+        {/* Manage Users */}
+        <Box sx={{ mt: 5 }}>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: 'lightblue' }}>
+              <Typography variant="h6">Manage Users</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell><strong>Name</strong></TableCell>
+                      <TableCell><strong>Email</strong></TableCell>
+                      <TableCell><strong>Actions</strong></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user._id}>
+                        <TableCell>{user.name}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="contained"
+                            color="error"
+                            size="small"
+                            onClick={() => handleDeleteUser(user._id)}
+                          >
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </AccordionDetails>
+          </Accordion>
         </Box>
       </Box>
     </ThemeProvider>

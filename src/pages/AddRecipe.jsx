@@ -228,7 +228,7 @@ const AddRecipe = () => {
       {/* Pending Recipes Section */}
       <Box sx={{ mt: 5 }}>
         <Typography variant="h5" gutterBottom>
-          Pending Recipes
+          Added Recipes
         </Typography>
         {fetching ? (
           <CircularProgress />

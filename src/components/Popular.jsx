@@ -10,8 +10,6 @@ const Popular = () => {
     const [error, setError] = useState('');
 
     const API_KEY = '81bdc134fb73435fbb14311ed16cb557';
-    console.log("API Key:", API_KEY); // Debugging
-    console.log("Backend URL:", import.meta.env.VITE_REACT_APP_BACKEND_URL); // Debugging
 
     const fetchPopularRecipes = async () => {
         setLoading(true);
@@ -20,15 +18,25 @@ const Popular = () => {
             const response = await fetch(
                 `https://api.spoonacular.com/recipes/random?apiKey=${API_KEY}&number=10`
             );
+
+            if (!response.ok) {
+                // Log and handle API errors
+                const errorData = await response.json();
+                console.error("API Error:", errorData);
+                throw new Error(errorData.message || "Failed to fetch recipes.");
+            }
+
             const data = await response.json();
+
             if (data?.recipes && Array.isArray(data.recipes)) {
                 setPopular(data.recipes);
             } else {
+                console.error("Unexpected API response format:", data);
                 throw new Error("Invalid API response format.");
             }
         } catch (err) {
             console.error("Error fetching popular recipes:", err);
-            setError("Failed to load popular recipes. Please try again later.");
+            setError(err.message || "Failed to load popular recipes. Please try again later.");
         } finally {
             setLoading(false);
         }

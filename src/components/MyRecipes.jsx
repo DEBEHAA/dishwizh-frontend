@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import RecipeCard from './RecipeCard';
-import { Splide, SplideSlide } from '@splidejs/react-splide';
-import '@splidejs/splide/dist/css/splide.min.css';
-import { Skeleton, Typography, Box, Chip } from '@mui/material';
+import { useNavigate } from 'react-router-dom'; // For navigation
+import {
+  Skeleton,
+  Typography,
+  Box,
+  Chip,
+  Card,
+  CardContent,
+  CardMedia,
+  Grid,
+  Button,
+} from '@mui/material';
 import axios from 'axios';
 
 const MyRecipes = () => {
   const [myRecipes, setMyRecipes] = useState([]); // State for recipes
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(''); // Error state
+  const navigate = useNavigate(); // For navigation
 
+  // Fetch user's recipes
   const getMyRecipes = async () => {
     const userId = localStorage.getItem('userId'); // Retrieve userId from localStorage
     if (!userId) {
@@ -20,9 +30,9 @@ const MyRecipes = () => {
 
     try {
       const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/+$/, ''); // Ensure no trailing slashes
-      console.log('Fetching recipes from:', `${backendURL}/api/recipe/user/${userId}`); // Corrected variable
+      console.log('Fetching recipes from:', `${backendURL}/api/recipe/user/${userId}`);
 
-      const response = await axios.get(`${backendURL}/api/recipe/user/${userId}`); // Corrected variable
+      const response = await axios.get(`${backendURL}/api/recipe/user/${userId}`);
       if (response.status === 200 && Array.isArray(response.data)) {
         console.log('Recipes fetched:', response.data); // Debug fetched recipes
         setMyRecipes(response.data);
@@ -43,13 +53,13 @@ const MyRecipes = () => {
 
   if (loading) {
     return (
-      <Splide options={{ perPage: 4, pagination: false, gap: '2rem' }}>
+      <Grid container spacing={3} justifyContent="center">
         {[...Array(4)].map((_, index) => (
-          <SplideSlide key={index}>
-            <Skeleton variant="rectangular" height={200} width={300} />
-          </SplideSlide>
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Skeleton variant="rectangular" height={200} />
+          </Grid>
         ))}
-      </Splide>
+      </Grid>
     );
   }
 
@@ -70,35 +80,52 @@ const MyRecipes = () => {
   }
 
   return (
-    <div className="my-recipes-container">
+    <Box sx={{ p: 3 }}>
       <Typography variant="h4" align="center" gutterBottom>
         My Recipes
       </Typography>
-      <Splide options={{ perPage: 4, pagination: false, gap: '2rem' }}>
+      <Grid container spacing={3}>
         {myRecipes.map((recipe) => (
-          recipe && recipe._id ? (
-            <SplideSlide key={recipe._id}>
-              <Box position="relative">
-                {/* Recipe Card */}
-                <RecipeCard data={{ ...recipe, isCustom: true }} />
-
-                {/* Approval Status Badge */}
-                <Chip
-                  label={recipe.status === 'approved' ? 'Approved' : 'Pending'}
-                  color={recipe.status === 'approved' ? 'success' : 'warning'}
-                  sx={{
-                    position: 'absolute',
-                    top: 10,
-                    left: 10,
-                    fontWeight: 'bold',
-                  }}
-                />
-              </Box>
-            </SplideSlide>
-          ) : null
+          <Grid item xs={12} sm={6} md={4} lg={3} key={recipe._id}>
+            <Card sx={{ maxWidth: 345, position: 'relative' }}>
+              <CardMedia
+                component="img"
+                height="200"
+                image={`${import.meta.env.VITE_REACT_APP_BACKEND_URL}${recipe.imageUrl}`}
+                alt={recipe.recipeName}
+              />
+              <CardContent>
+                <Typography variant="h6" component="div" gutterBottom>
+                  {recipe.recipeName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Cuisine: {recipe.cuisineType}
+                </Typography>
+              </CardContent>
+              <Chip
+                label={recipe.status === 'approved' ? 'Approved' : 'Pending'}
+                color={recipe.status === 'approved' ? 'success' : 'warning'}
+                sx={{
+                  position: 'absolute',
+                  top: 10,
+                  left: 10,
+                  fontWeight: 'bold',
+                }}
+              />
+              <Button
+                size="small"
+                variant="outlined"
+                color="primary"
+                sx={{ m: 2 }}
+                onClick={() => navigate(`/recipes/${recipe._id}`)} // Navigate to RecipeDetails
+              >
+                View Details
+              </Button>
+            </Card>
+          </Grid>
         ))}
-      </Splide>
-    </div>
+      </Grid>
+    </Box>
   );
 };
 
