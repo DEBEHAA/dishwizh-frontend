@@ -15,6 +15,8 @@ import {
   List,
   ListItem,
   ListItemText,
+  Divider,
+  Chip,
 } from '@mui/material';
 
 const AddRecipe = () => {
@@ -23,13 +25,14 @@ const AddRecipe = () => {
     recipeName: '',
     cuisineType: '',
     ingredients: '',
-    steps: ''
+    steps: '',
   });
   const [image, setImage] = useState(null); // State for image file
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false); // Loading state
   const [pendingRecipes, setPendingRecipes] = useState([]); // State for pending recipes
-  const [fetchingPending, setFetchingPending] = useState(true); // Loading state for pending recipes
+  const [verifiedRecipes, setVerifiedRecipes] = useState([]); // State for verified recipes
+  const [fetching, setFetching] = useState(true); // Loading state for fetching recipes
 
   const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/$/, ''); // Ensure no trailing slash
 
@@ -38,7 +41,7 @@ const AddRecipe = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
@@ -95,12 +98,12 @@ const AddRecipe = () => {
         recipeName: '',
         cuisineType: '',
         ingredients: '',
-        steps: ''
+        steps: '',
       });
       setImage(null);
 
-      // Refresh pending recipes after adding
-      fetchPendingRecipes();
+      // Refresh recipes after adding
+      fetchRecipes();
     } catch (error) {
       if (error.response) {
         setMessage(`Error: ${error.response.data.message || 'Failed to add recipe.'}`);
@@ -115,22 +118,25 @@ const AddRecipe = () => {
     }
   };
 
-  // Fetch pending recipes
-  const fetchPendingRecipes = async () => {
+  // Fetch pending and verified recipes
+  const fetchRecipes = async () => {
     try {
-      setFetchingPending(true);
-      const response = await axios.get(`${backendUrl}/api/recipe/user/${userId}?status=pending`);
-      setPendingRecipes(response.data || []);
+      setFetching(true);
+      const pendingResponse = await axios.get(`${backendUrl}/api/recipe/user/${userId}?status=pending`);
+      const verifiedResponse = await axios.get(`${backendUrl}/api/recipe/user/${userId}?status=approved`);
+
+      setPendingRecipes(pendingResponse.data || []);
+      setVerifiedRecipes(verifiedResponse.data || []);
     } catch (error) {
-      console.error('Error fetching pending recipes:', error);
-      setMessage('Failed to fetch pending recipes.');
+      console.error('Error fetching recipes:', error);
+      setMessage('Failed to fetch recipes.');
     } finally {
-      setFetchingPending(false);
+      setFetching(false);
     }
   };
 
   useEffect(() => {
-    fetchPendingRecipes();
+    fetchRecipes();
   }, []);
 
   return (
@@ -200,18 +206,9 @@ const AddRecipe = () => {
             />
           </Grid>
           <Grid item xs={12}>
-            <Button
-              variant="contained"
-              component="label"
-              fullWidth
-            >
+            <Button variant="contained" component="label" fullWidth>
               Upload Image
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handleImageChange}
-              />
+              <input type="file" accept="image/*" hidden onChange={handleImageChange} />
             </Button>
             {image && <Typography align="center" sx={{ mt: 1 }}>{image.name}</Typography>}
           </Grid>
@@ -233,7 +230,7 @@ const AddRecipe = () => {
         <Typography variant="h5" gutterBottom>
           Pending Recipes
         </Typography>
-        {fetchingPending ? (
+        {fetching ? (
           <CircularProgress />
         ) : pendingRecipes.length > 0 ? (
           <Paper sx={{ p: 2 }}>
@@ -250,6 +247,31 @@ const AddRecipe = () => {
           </Paper>
         ) : (
           <Typography>No pending recipes.</Typography>
+        )}
+      </Box>
+
+      {/* Verified Recipes Section */}
+      <Box sx={{ mt: 5 }}>
+        <Typography variant="h5" gutterBottom>
+          Verified Recipes
+        </Typography>
+        {fetching ? (
+          <CircularProgress />
+        ) : verifiedRecipes.length > 0 ? (
+          <Paper sx={{ p: 2 }}>
+            <List>
+              {verifiedRecipes.map((recipe) => (
+                <ListItem key={recipe._id}>
+                  <ListItemText
+                    primary={recipe.recipeName}
+                    secondary={`Cuisine: ${recipe.cuisineType}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        ) : (
+          <Typography>No verified recipes.</Typography>
         )}
       </Box>
     </Box>
