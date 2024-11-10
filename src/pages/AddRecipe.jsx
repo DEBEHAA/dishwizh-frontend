@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   TextField,
@@ -11,6 +11,10 @@ import {
   Select,
   MenuItem,
   CircularProgress,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
 } from '@mui/material';
 
 const AddRecipe = () => {
@@ -24,6 +28,10 @@ const AddRecipe = () => {
   const [image, setImage] = useState(null); // State for image file
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false); // Loading state
+  const [pendingRecipes, setPendingRecipes] = useState([]); // State for pending recipes
+  const [fetchingPending, setFetchingPending] = useState(true); // Loading state for pending recipes
+
+  const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/$/, ''); // Ensure no trailing slash
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -60,7 +68,6 @@ const AddRecipe = () => {
       return;
     }
 
-    const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/$/, ''); // Ensure no trailing slash
     if (!backendUrl) {
       setMessage('Server configuration error. Please try again later.');
       return;
@@ -79,7 +86,7 @@ const AddRecipe = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        `${backendUrl}/api/recipe`, // Updated URL handling
+        `${backendUrl}/api/recipe`,
         formDataToSend,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -91,6 +98,9 @@ const AddRecipe = () => {
         steps: ''
       });
       setImage(null);
+
+      // Refresh pending recipes after adding
+      fetchPendingRecipes();
     } catch (error) {
       if (error.response) {
         setMessage(`Error: ${error.response.data.message || 'Failed to add recipe.'}`);
@@ -104,6 +114,24 @@ const AddRecipe = () => {
       setLoading(false);
     }
   };
+
+  // Fetch pending recipes
+  const fetchPendingRecipes = async () => {
+    try {
+      setFetchingPending(true);
+      const response = await axios.get(`${backendUrl}/api/recipe/user/${userId}?status=pending`);
+      setPendingRecipes(response.data || []);
+    } catch (error) {
+      console.error('Error fetching pending recipes:', error);
+      setMessage('Failed to fetch pending recipes.');
+    } finally {
+      setFetchingPending(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingRecipes();
+  }, []);
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', mt: 5 }}>
@@ -199,6 +227,31 @@ const AddRecipe = () => {
           {loading ? <CircularProgress size={24} /> : 'Add Recipe'}
         </Button>
       </form>
+
+      {/* Pending Recipes Section */}
+      <Box sx={{ mt: 5 }}>
+        <Typography variant="h5" gutterBottom>
+          Pending Recipes
+        </Typography>
+        {fetchingPending ? (
+          <CircularProgress />
+        ) : pendingRecipes.length > 0 ? (
+          <Paper sx={{ p: 2 }}>
+            <List>
+              {pendingRecipes.map((recipe) => (
+                <ListItem key={recipe._id}>
+                  <ListItemText
+                    primary={recipe.recipeName}
+                    secondary={`Cuisine: ${recipe.cuisineType}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        ) : (
+          <Typography>No pending recipes.</Typography>
+        )}
+      </Box>
     </Box>
   );
 };

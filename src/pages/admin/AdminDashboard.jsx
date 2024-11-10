@@ -17,28 +17,40 @@ import {
 import { Bar, Pie } from 'react-chartjs-2';
 import 'chart.js/auto';
 import { Brightness4, Brightness7 } from '@mui/icons-material';
-import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const AdminDashboard = () => {
     const [analytics, setAnalytics] = useState({});
     const [users, setUsers] = useState([]);
+    const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [darkMode, setDarkMode] = useState(false);
 
-    // Correctly access environment variables in Vite
     const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/+$/, '');
 
-    // Fetch data
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const analyticsResponse = await axios.get(`${backendURL}/api/admin/analytics`);
+                // Fetch analytics data
+                const analyticsResponse = await axios.post(`${backendURL}/api/admin/analytics`, {
+                    userId: localStorage.getItem('userId'),
+                });
                 setAnalytics(analyticsResponse.data);
 
-                const usersResponse = await axios.get(`${backendURL}/api/admin/users`);
+                // Fetch user data
+                const usersResponse = await axios.post(`${backendURL}/api/admin/users`, {
+                    userId: localStorage.getItem('userId'),
+                });
                 setUsers(usersResponse.data);
+
+                // Fetch recipe data
+                const recipesResponse = await axios.post(`${backendURL}/api/admin/recipes`, {
+                    userId: localStorage.getItem('userId'),
+                });
+                setRecipes(recipesResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
+                alert('Failed to load data. Ensure you have admin privileges.');
             } finally {
                 setLoading(false);
             }
@@ -49,10 +61,44 @@ const AdminDashboard = () => {
 
     const handleDeleteUser = async (userId) => {
         try {
-            await axios.delete(`${backendURL}/api/admin/users/${userId}`);
+            await axios.delete(`${backendURL}/api/admin/users/${userId}`, {
+                data: { userId: localStorage.getItem('userId') },
+            });
             setUsers(users.filter((user) => user._id !== userId));
+            alert('User deleted successfully');
         } catch (error) {
             console.error('Error deleting user:', error);
+            alert('Failed to delete user.');
+        }
+    };
+
+    const handleApproveRecipe = async (recipeId) => {
+        try {
+            await axios.put(`${backendURL}/api/admin/recipes/approve/${recipeId}`, {
+                userId: localStorage.getItem('userId'),
+            });
+            setRecipes((prev) =>
+                prev.map((recipe) =>
+                    recipe._id === recipeId ? { ...recipe, status: 'approved' } : recipe
+                )
+            );
+            alert('Recipe approved successfully!');
+        } catch (error) {
+            console.error('Error approving recipe:', error);
+            alert('Failed to approve recipe.');
+        }
+    };
+
+    const handleDeclineRecipe = async (recipeId) => {
+        try {
+            await axios.delete(`${backendURL}/api/admin/recipes/${recipeId}`, {
+                data: { userId: localStorage.getItem('userId') },
+            });
+            setRecipes((prev) => prev.filter((recipe) => recipe._id !== recipeId));
+            alert('Recipe declined successfully!');
+        } catch (error) {
+            console.error('Error declining recipe:', error);
+            alert('Failed to decline recipe.');
         }
     };
 
@@ -69,14 +115,6 @@ const AdminDashboard = () => {
         },
     });
 
-    if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <Typography variant="h6">Loading...</Typography>
-            </Box>
-        );
-    }
-
     const barData = {
         labels: analytics.dailyNewUsers?.map((item) => item._id) || [],
         datasets: [
@@ -88,24 +126,26 @@ const AdminDashboard = () => {
         ],
     };
 
-    const pieData = {
-        labels: ['Total Users', 'Total Recipes'],
+    const recipeStatusData = {
+        labels: ['Approved', 'Pending'],
         datasets: [
             {
-                data: [analytics.totalUsers, analytics.totalRecipes],
-                backgroundColor: ['rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)'],
-                hoverOffset: 4,
+                data: [
+                    recipes.filter((recipe) => recipe.status === 'approved').length,
+                    recipes.filter((recipe) => recipe.status === 'pending').length,
+                ],
+                backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)'],
             },
         ],
     };
 
-    const pieOptions = {
-        plugins: {
-            legend: {
-                position: 'right',
-            },
-        },
-    };
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <Typography variant="h6">Loading...</Typography>
+            </Box>
+        );
+    }
 
     return (
         <ThemeProvider theme={customTheme}>
@@ -145,8 +185,8 @@ const AdminDashboard = () => {
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Paper sx={{ p: 3 }}>
-                            <Typography variant="h6">Overall Distribution</Typography>
-                            <Pie data={pieData} options={pieOptions} />
+                            <Typography variant="h6">Recipe Status Distribution</Typography>
+                            <Pie data={recipeStatusData} />
                         </Paper>
                     </Grid>
                 </Grid>
@@ -180,14 +220,56 @@ const AdminDashboard = () => {
                                                 >
                                                     Delete
                                                 </Button>
-                                                <Button
-                                                    variant="contained"
-                                                    color="primary"
-                                                    size="small"
-                                                    onClick={() => alert(`Edit user: ${user.name}`)}
-                                                >
-                                                    Edit
-                                                </Button>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
+
+                {/* Recipe Management */}
+                <Box sx={{ mt: 5 }}>
+                    <Typography variant="h5" gutterBottom>
+                        Manage Recipes
+                    </Typography>
+                    <TableContainer component={Paper}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell><strong>Name</strong></TableCell>
+                                    <TableCell><strong>Status</strong></TableCell>
+                                    <TableCell><strong>Actions</strong></TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {recipes.map((recipe) => (
+                                    <TableRow key={recipe._id}>
+                                        <TableCell>{recipe.recipeName}</TableCell>
+                                        <TableCell>{recipe.status}</TableCell>
+                                        <TableCell>
+                                            <Box display="flex" gap={1}>
+                                                {recipe.status === 'pending' && (
+                                                    <>
+                                                        <Button
+                                                            variant="contained"
+                                                            color="success"
+                                                            size="small"
+                                                            onClick={() => handleApproveRecipe(recipe._id)}
+                                                        >
+                                                            Approve
+                                                        </Button>
+                                                        <Button
+                                                            variant="contained"
+                                                            color="error"
+                                                            size="small"
+                                                            onClick={() => handleDeclineRecipe(recipe._id)}
+                                                        >
+                                                            Decline
+                                                        </Button>
+                                                    </>
+                                                )}
                                             </Box>
                                         </TableCell>
                                     </TableRow>

@@ -28,19 +28,15 @@ const Signin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  // Clean the backend URL to prevent trailing slashes or issues
   const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_URL?.replace(/\/+$/, '');
 
-  // Toggle password visibility
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleMouseDownPassword = (event) => event.preventDefault();
 
-  // Handle input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Backend URL:", backendURL); // Debugging the backend URL
@@ -48,14 +44,19 @@ const Signin = () => {
     try {
       const res = await axios.post(`${backendURL}/api/auth/login`, formData);
 
-      // Assuming the backend returns an object with `userId`
-      const userId = res.data.userId;
+      // Assuming the backend returns `userId` and `isAdmin`
+      const { userId, isAdmin } = res.data;
 
-      // Store userId in localStorage
+      // Store userId and isAdmin status in localStorage
       localStorage.setItem('userId', userId);
+      localStorage.setItem('isAdmin', isAdmin);
 
-      // Redirect to the user details page or dashboard
-      navigate('/*');
+      // Redirect based on admin status
+      if (isAdmin) {
+        navigate('/admin'); // Redirect to Admin Panel
+      } else {
+        navigate('/*'); // Redirect to Home
+      }
     } catch (err) {
       console.error("Login error:", err);
 

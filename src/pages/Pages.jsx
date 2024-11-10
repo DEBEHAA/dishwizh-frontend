@@ -13,6 +13,8 @@ import AddRecipe from './AddRecipe';
 import UserProfile from './UserProfile';
 import UserList from './UserList';
 import AdminDashboard from './admin/AdminDashboard';
+import ChatPage from './chat/ChatPage'; // Import ChatPage component
+import Chat from './chat/Chat'; // Import Chat component
 
 const Pages = () => {
     return (
@@ -38,6 +40,10 @@ const Pages = () => {
 
                     {/* Recipe Adding Page */}
                     <Route path="/addrecipe" element={<AddRecipe />} />
+
+                    {/* Chat Pages */}
+                    <Route path="/chat" element={<ChatPage userId="currentUserId" />} /> {/* Replace currentUserId */}
+                    <Route path="/chat/:userId" element={<Chat userId="currentUserId" otherUserId=":userId" />} />
 
                     {/* Recipe Pages */}
                     <Route path="/searched/:search/recipe/:name" element={<Recipe />} />
