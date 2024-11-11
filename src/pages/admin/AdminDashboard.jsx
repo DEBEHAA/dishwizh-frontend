@@ -46,24 +46,23 @@ const AdminDashboard = () => {
         return;
       }
 
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        alert('User ID is missing. Please log in.');
-        return;
-      }
-
       try {
-        const analyticsResponse = await axios.post(`${backendURL}/api/admin/analytics`, { userId });
-        setAnalytics(analyticsResponse.data);
+        setLoading(true);
 
-        const usersResponse = await axios.post(`${backendURL}/api/admin/users`, { userId });
-        setUsers(usersResponse.data);
+        // Fetch analytics
+        const analyticsResponse = await axios.post(`${backendURL}/api/admin/analytics`, {});
+        setAnalytics(analyticsResponse.data.data);
 
-        const recipesResponse = await axios.post(`${backendURL}/api/admin/recipes`, { userId });
-        setRecipes(recipesResponse.data);
-        setFilteredRecipes(recipesResponse.data);
+        // Fetch users
+        const usersResponse = await axios.get(`${backendURL}/api/admin/users`);
+        setUsers(usersResponse.data.data);
+
+        // Fetch recipes
+        const recipesResponse = await axios.get(`${backendURL}/api/admin/recipes`);
+        setRecipes(recipesResponse.data.data);
+        setFilteredRecipes(recipesResponse.data.data);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error.response?.data || error.message);
         alert(`Failed to load data. ${error.response?.data?.message || ''}`);
       } finally {
         setLoading(false);
@@ -75,8 +74,7 @@ const AdminDashboard = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      const adminId = localStorage.getItem('userId');
-      await axios.delete(`${backendURL}/api/admin/users/${userId}`, { data: { userId: adminId } });
+      await axios.delete(`${backendURL}/api/admin/users/${userId}`);
       setUsers(users.filter((user) => user._id !== userId));
       alert('User deleted successfully');
     } catch (error) {
@@ -87,8 +85,7 @@ const AdminDashboard = () => {
 
   const handleApproveRecipe = async (recipeId) => {
     try {
-      const adminId = localStorage.getItem('userId');
-      await axios.put(`${backendURL}/api/admin/recipes/approve/${recipeId}`, { userId: adminId });
+      await axios.put(`${backendURL}/api/admin/recipes/approve/${recipeId}`);
       setRecipes((prev) =>
         prev.map((recipe) =>
           recipe._id === recipeId ? { ...recipe, status: 'approved' } : recipe
@@ -103,8 +100,7 @@ const AdminDashboard = () => {
 
   const handleDeclineRecipe = async (recipeId) => {
     try {
-      const adminId = localStorage.getItem('userId');
-      await axios.delete(`${backendURL}/api/admin/recipes/${recipeId}`, { data: { userId: adminId } });
+      await axios.delete(`${backendURL}/api/admin/recipes/${recipeId}`);
       setRecipes((prev) => prev.filter((recipe) => recipe._id !== recipeId));
       alert('Recipe declined successfully!');
     } catch (error) {
@@ -140,11 +136,11 @@ const AdminDashboard = () => {
   });
 
   const barData = {
-    labels: analytics.dailyNewUsers?.map((item) => item._id) || [],
+    labels: analytics.dailyNewUsers?.map((item) => item._id || 'Unknown') || [],
     datasets: [
       {
         label: 'Daily New Users',
-        data: analytics.dailyNewUsers?.map((item) => item.count) || [0],
+        data: analytics.dailyNewUsers?.map((item) => item.count) || [],
         backgroundColor: 'rgba(54, 162, 235, 0.6)',
       },
     ],
@@ -155,8 +151,8 @@ const AdminDashboard = () => {
     datasets: [
       {
         data: [
-          recipes.filter((recipe) => recipe.status === 'approved').length || 0,
-          recipes.filter((recipe) => recipe.status === 'pending').length || 0,
+          recipes.filter((recipe) => recipe.status === 'approved').length,
+          recipes.filter((recipe) => recipe.status === 'pending').length,
         ],
         backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)'],
       },
@@ -269,10 +265,18 @@ const AdminDashboard = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell><strong>Name</strong></TableCell>
-                  <TableCell><strong>Status</strong></TableCell>
-                  <TableCell><strong>Details</strong></TableCell>
-                  <TableCell><strong>Actions</strong></TableCell>
+                  <TableCell>
+                    <strong>Name</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Status</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Details</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Actions</strong>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -283,7 +287,9 @@ const AdminDashboard = () => {
                     <TableCell>
                       <Accordion>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                          <Typography><strong>Ingredients</strong></Typography>
+                          <Typography>
+                            <strong>Ingredients</strong>
+                          </Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                           <Typography>{recipe.ingredients.join(', ')}</Typography>
@@ -291,7 +297,9 @@ const AdminDashboard = () => {
                       </Accordion>
                       <Accordion>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                          <Typography><strong>Steps</strong></Typography>
+                          <Typography>
+                            <strong>Steps</strong>
+                          </Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                           <Typography>{recipe.steps}</Typography>
@@ -350,9 +358,15 @@ const AdminDashboard = () => {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell><strong>Name</strong></TableCell>
-                      <TableCell><strong>Email</strong></TableCell>
-                      <TableCell><strong>Actions</strong></TableCell>
+                      <TableCell>
+                        <strong>Name</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Email</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Actions</strong>
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
